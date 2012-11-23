@@ -18,3 +18,4 @@
 *.app
 
 *.BACKLOG
+/MySQL Parse_DBWriter/main
