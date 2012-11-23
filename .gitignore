@@ -19,3 +19,4 @@
 
 *.BACKLOG
 /MySQL Parse_DBWriter/main
+/MySQL Parse_DBWriter/dbWriter
