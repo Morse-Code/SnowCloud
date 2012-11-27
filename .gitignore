@@ -18,5 +18,8 @@
 *.app
 
 *.BACKLOG
-/MySQL Parse_DBWriter/main
-/MySQL Parse_DBWriter/dbWriter
+*.dSYM
+SnowCloud.sublime-workspace
+Resources
+/MySQL_DBReader/dbReader
+/MySQL_DBWriter/dbWriter
