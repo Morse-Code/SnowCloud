@@ -21,7 +21,9 @@ int dbread(MYSQL *conn);
 / Parameters: MySQL *conn
 / Return: int 0 if successful; int 1 if error.
 **************************************************************************************************/
-int mysql_connection(MYSQL *conn) {
+int mysql_connection(MYSQL *conn) 
+{
+
 
     if (conn == NULL) {
         printf("Error %u: %s\n", mysql_errno(conn), mysql_error(conn));
@@ -37,6 +39,7 @@ int mysql_connection(MYSQL *conn) {
 }
 
 /*  
+
     int getLastEntry(MYSQL *conn)
     {
         int lastEntry;
@@ -55,7 +58,9 @@ int mysql_connection(MYSQL *conn) {
 / Parameters: MYSQL *conn
 / Return: int 0 if successful; int <> 0 if error.
 **************************************************************************************************/
-int dbread(MYSQL *conn){
+int dbread(MYSQL *conn)
+{
+
     MYSQL_RES *result;
     MYSQL_ROW row;
     int i;
@@ -75,6 +80,7 @@ int dbread(MYSQL *conn){
     {     
         for(i = 0; i < (num_fields - 2); i++)
         {
+            
             printf("%s\t", row[i] ? row[i] : "NULL");
         }
         printf("\n");
@@ -92,7 +98,9 @@ int dbread(MYSQL *conn){
   return 0;
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char *argv[]) 
+{
+
     MYSQL *conn;
     conn = mysql_init(NULL);
 

@@ -22,7 +22,9 @@ void parsetokens(MYSQL *conn);
 / Parameters: MySQL *conn
 / Return: int 0 if successful; int 1 if error.
 **********************************************************************************************/
-int mysql_connection(MYSQL *conn) {
+int mysql_connection(MYSQL *conn) 
+{
+
 
     if (conn == NULL) {
         printf("Error %u: %s\n", mysql_errno(conn), mysql_error(conn));
@@ -47,7 +49,9 @@ int mysql_connection(MYSQL *conn) {
 / Parses incoming data from stdin into tokens. Tokens are fed as arguments to dbwrite().
 / Parameters: MYSQL connection, conn.
 **************************************************************************************************/
-void parsetokens(MYSQL *conn){
+void parsetokens(MYSQL *conn)
+{
+
     char *dattribute, *epoch, *mote, *cattribute;
     const char delimiters[] = "mcdr";
     size_t nbytes = 100;
@@ -70,7 +74,8 @@ void parsetokens(MYSQL *conn){
 / Parameters: MySQL *conn, char *mote, char *cattribute, char *dattribute, char *epoch
 / Return: int result; The number of characters written to the database.
 **************************************************************************************************/
-int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *epoch) {
+int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *epoch) 
+{
     int success;
 
     if (epoch[0] != '1'){
@@ -90,8 +95,8 @@ int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *e
     int success = mysql_query(conn, timequery);
     if (success != 0) {
         printf("SQL Error: %d, %s%c", mysql_errno(conn), mysql_error(conn), '\n');
-    }
-*/
+    }*/
+
     char *stat = "INSERT INTO SNOWDATA(mote, cattribute, dattribute, epoch, mytime, myindex) VALUES('%s', '%s', '%s', '%s', '%d', NULL)";
     char *query;
     int tstamp = (int)time(NULL);
@@ -105,10 +110,11 @@ int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *e
     fputc('\n', stdout);
     free(query);
     return result;
-
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char *argv[]) 
+{
+    
     MYSQL *conn;
     conn = mysql_init(NULL);
 
