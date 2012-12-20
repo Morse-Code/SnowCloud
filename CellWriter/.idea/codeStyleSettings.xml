@@ -12,6 +12,9 @@
         <codeStyleSettings language="Python">
           <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
           <option name="WRAP_LONG_LINES" value="true" />
+          <indentOptions>
+            <option name="SMART_TABS" value="true" />
+          </indentOptions>
         </codeStyleSettings>
       </value>
     </option>

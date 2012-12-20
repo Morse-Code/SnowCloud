@@ -19,7 +19,7 @@ class ATCommands:
         """
         Constructor for ATCommands.
         """
-        self.newLine = ('\r\n')
+        self.newLine = '\r\n'
 
     def initModem(self, port='/dev/tty.usbserial-A9014MJT',
                   baudrate=115200,
@@ -36,11 +36,11 @@ class ATCommands:
         :type timeout: int
         """
         self.ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
-        print "AT:\t\t",
+        print "AT:\t\t\t",
         while self.sendCommand('')[2] != 'OK':
             time.sleep(.5)
         time.sleep(1)
-        print '\n' + "ATE0:\t",
+        print '\n' + "ATE0:\t\t",
         while self.sendCommand('E0')[2] != 'OK':
             time.sleep(.5)
         return 1
@@ -55,13 +55,40 @@ class ATCommands:
         :rtype: int
         """
         command = '+CSQ'
-        print '\n' + 'AT+CSQ:\t',
+        print '\n' + command + ':\t\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        while int(responseValue.split(',')[0]) == 99 or responseConfirm !=\
-              'OK':
+        while (int(responseValue.split(',')[0]) == 99 or responseConfirm !=
+               'OK'):
             time.sleep(1)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print ', Signal: ' + responseValue.split(',')[0]
+        print '\t\t\tSignal: ' + responseValue.split(',')[0],
+        return 1
+
+    def checkSIM(self):
+        """Check to make sure the SIM card is ready.
+
+        :type self: FTPComm.ATCommands
+        :return: 1 if success; otherwise != 1
+        :rtype: int
+        """
+        command = '+CPIN?'
+        print '\n' + command + '\t\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseValue != 'READY' or responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tSIM: ' + responseValue.split(',')[0],
+        return 1
+
+    def attachNetwork(self):
+        command = '+AIPDCONT=\"INTERNET\"'
+        print '\n' + '+AIPDCONT' + '\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseValue.split(',')[0] != '"INTERNET"' or responseConfirm\
+              != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tAPN: ' + responseValue.split(',')[0],
         return 1
 
     def sendCommand(self, command, getline=True):
@@ -98,11 +125,11 @@ class ATCommands:
         r = re.compile("(\s*((?P<type>\S+):)\s*(?P<value>\S+)"
                        "(,.*)*)*\s*(?P<ok>\S+)\s*")
         m = r.match(data)
-        if (m.group('type')):
+        if m.group('type'):
             responseType = m.group('type')
-        if (m.group('value')):
+        if m.group('value'):
             responseValue = m.group('value')
-        if (m.group('ok')):
+        if m.group('ok'):
             responseConfirm = m.group('ok')
             print responseConfirm,
         self.ser.flush()
@@ -111,13 +138,26 @@ class ATCommands:
     def closeConn(self):
         self.ser.close()
 
+    def activateGPRS(self):
+        command = '+AIPA=1'
+        print '\n' + command + '\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tGPRS: ' + responseValue.split(',')[0],
+        return 1
+
 
 def main():
-    print '\n\nCmnd | Response'
+    print '\n\nCmnd\t|\tConfirm\t|\tValue'
     modem = ATCommands()
     modem.initModem()
     time.sleep(.5)
     modem.checkSignal()
+    modem.checkSIM()
+    modem.attachNetwork()
+    modem.activateGPRS()
 
 
 if __name__ == "__main__":
