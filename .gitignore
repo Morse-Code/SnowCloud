@@ -19,7 +19,61 @@
 
 *.BACKLOG
 *.dSYM
-SnowCloud.sublime-workspace
+*.sublime-workspace
 Resources
 /MySQL_DBReader/dbReader
 /MySQL_DBWriter/dbWriter
+workspace
+*/workspace
+
+*.py[cod]
+ 
+# C extensions
+*.so
+ 
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+*.pyc
+
+# Ignore all the virtualenv stuff 
+*/PythonVEnv
+
+#/bin
+#/include
+#/lib/python*/*
+#!/lib/python*/site-packages
+
+# Ignore easyinstall and setuptools
+#/lib/python*/site-packages/easy-install.pth
+#/lib/python*/site-packages/setuptools.pth
+#/lib/python*/site-packages/setuptools-*
+#/lib/python*/site-packages/pip-*
+ 
+# Installer logs
+#pip-log.txt
+ 
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+ 
+# Translations
+*.mo
+ 
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+workspace.xml
