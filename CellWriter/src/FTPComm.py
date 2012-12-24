@@ -45,52 +45,6 @@ class ATCommands:
             time.sleep(.5)
         return 1
 
-    def checkSignal(self):
-        """
-        Issues AT+CSQ command to check signal quality. First value of
-        tuple in AT command response has valid range 0-31.
-
-        :type self: FTPComm.ATCommands
-        :return: 1 if success, other if error
-        :rtype: int
-        """
-        command = '+CSQ'
-        print '\n' + command + ':\t\t',
-        responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        while (int(responseValue.split(',')[0]) == 99 or responseConfirm !=
-               'OK'):
-            time.sleep(1)
-            responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tSignal: ' + responseValue.split(',')[0],
-        return 1
-
-    def checkSIM(self):
-        """Check to make sure the SIM card is ready.
-
-        :type self: FTPComm.ATCommands
-        :return: 1 if success; otherwise != 1
-        :rtype: int
-        """
-        command = '+CPIN?'
-        print '\n' + command + '\t\t',
-        responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        while responseValue != 'READY' or responseConfirm != 'OK':
-            time.sleep(.5)
-            responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tSIM: ' + responseValue.split(',')[0],
-        return 1
-
-    def attachNetwork(self):
-        command = '+AIPDCONT=\"INTERNET\"'
-        print '\n' + '+AIPDCONT' + '\t',
-        responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        while responseValue.split(',')[0] != '"INTERNET"' or responseConfirm\
-              != 'OK':
-            time.sleep(.5)
-            responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tAPN: ' + responseValue.split(',')[0],
-        return 1
-
     def sendCommand(self, command, getline=True):
         """
         Sends formatted AT Command over serial connection. Prefixes passed
@@ -138,7 +92,58 @@ class ATCommands:
     def closeConn(self):
         self.ser.close()
 
+    def checkSignal(self):
+        """
+        Issues AT+CSQ command to check signal quality. First value of
+        tuple in AT command response has valid range 0-31.
+
+        :type self: FTPComm.ATCommands
+        :return: 1 if success, other if error
+        :rtype: int
+        """
+        command = '+CSQ'
+        print '\n' + command + ':\t\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while (int(responseValue.split(',')[0]) == 99 or responseConfirm !=
+               'OK'):
+            time.sleep(1)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tSignal: ' + responseValue.split(',')[0],
+        return 1
+
+    def checkSIM(self):
+        """Check to make sure the SIM card is ready.
+
+        :type self: FTPComm.ATCommands
+        :return: 1 if success; otherwise != 1
+        :rtype: int
+        """
+        command = '+CPIN?'
+        print '\n' + command + '\t\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseValue != 'READY' or responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tSIM: ' + responseValue.split(',')[0],
+        return 1
+
+    def attachNetwork(self):
+        command = '+AIPDCONT=\"INTERNET\"'
+        print '\n' + '+AIPDCONT' + '\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseValue.split(',')[0] != '"Embeddedworks.globalm2m.net"'\
+        or responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tAPN: ' + responseValue.split(',')[0],
+        return 1
+
     def activateGPRS(self):
+        """
+        Activate GPRS data connection.
+        :return:
+        :rtype:
+        """
         command = '+AIPA=1'
         print '\n' + command + '\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
