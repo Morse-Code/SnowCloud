@@ -152,28 +152,96 @@ class ATCommands:
     def activateGPRS(self):
         """
         Activate GPRS data connection.
+        :type self: FTPComm.ATCommands
         :return:
         :rtype:
         """
         command = '+AIPA=1'
-        print '\n' + command + '\t',
+        print '\n' + command + '\t\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseConfirm != 'OK':
             time.sleep(.5)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tGPRS: ' + responseValue.split(',')[0],
+        print '\t\t\tGPRS: ' + responseValue.split(',')[1],
+        return 1
+
+    def setAutoQuality(self):
+        """
+        :type self: FTPComm.ATCommands
+        """
+        command = '+AIPQREQ=0,0,0,0,0'
+        print '\n' + command[:8],
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tAIPQ=' + responseValue,
+        return 1
+
+    #noinspection PyTypeChecker
+    def FTPconnect(self,
+                   IP='174.63.100.132',
+                   port=21,
+                   user='morsecp',
+                   pw='!1Morsecp'):
+        """
+        :type self: FTPComm.ATCommands
+        :type IP: str
+        :type port: int
+        :type user: str
+        :type pw: str
+        """
+        command = '+AFTPO="{ip}",{p},"{u}","{pw}"'.format(ip=IP, p=port,
+                                                          u=user, pw=pw)
+        print '\n' + command
+        print '\n' + command[:6],
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseValue != 'Login':
+            time.sleep(.5)
+            self.activateGPRS()
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tAIPQ=' + responseValue,
+        return 1
+
+    def FTPclose(self):
+        """
+        :return:
+        :rtype:
+        """
+        command = '+AFTPC'
+        print '\n' + command + '\t\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseValue != '0' or responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print '\t\t\tFTPClosed: ' + responseValue,
         return 1
 
 
 def main():
+    """
+    Main method.
+    """
     print '\n\nCmnd\t|\tConfirm\t|\tValue'
     modem = ATCommands()
     modem.initModem()
-    time.sleep(.5)
+    time.sleep(1)
     modem.checkSignal()
+    time.sleep(1)
     modem.checkSIM()
+    time.sleep(1)
     modem.attachNetwork()
+    time.sleep(1)
     modem.activateGPRS()
+    time.sleep(1)
+    modem.setAutoQuality()
+    time.sleep(1)
+    modem.FTPconnect()
+    time.sleep(1)
+    modem.FTPclose()
+    time.sleep(1)
+    modem.closeConn()
 
 
 if __name__ == "__main__":
