@@ -21,7 +21,8 @@ class ATCommands:
         """
         self.newLine = '\r\n'
 
-    def initModem(self, port='/dev/tty.usbserial-A9014MJT',
+    def initModem(self,
+                  port='/dev/tty.usbserial-A9014MJT',
                   baudrate=115200,
                   timeout=1):
         """
@@ -36,13 +37,13 @@ class ATCommands:
         :type timeout: int
         """
         self.ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
-        print "AT:\t\t\t",
+        print "ATE0:\t\t",
+        while self.sendCommand('E0')[2] != 'OK':
+            time.sleep(.5)
+        print '\n' + "AT:\t\t\t",
         while self.sendCommand('')[2] != 'OK':
             time.sleep(.5)
         time.sleep(1)
-        print '\n' + "ATE0:\t\t",
-        while self.sendCommand('E0')[2] != 'OK':
-            time.sleep(.5)
         return 1
 
     def sendCommand(self, command, getline=True):
@@ -70,12 +71,17 @@ class ATCommands:
          according to the AT Command issued. ie. signal quality
 
          responseType is the ususlly the echo of the command issued followed
+        :type self: FTPComm.ATCommands
           by a ':'.
         """
         responseConfirm = ''
         responseValue = ''
         responseType = ''
-        data = self.ser.read(256)
+        data = self.ser.read(512)
+        while data == '':
+            time.sleep(1)
+            data = self.ser.read(512)
+            #        print data
         r = re.compile("(\s*((?P<type>\S+):)\s*(?P<value>\S+)"
                        "(,.*)*)*\s*(?P<ok>\S+)\s*")
         m = r.match(data)
@@ -90,6 +96,8 @@ class ATCommands:
         return responseType, responseValue, responseConfirm
 
     def closeConn(self):
+        """
+        """
         self.ser.close()
 
     def checkSignal(self):
@@ -124,11 +132,14 @@ class ATCommands:
         while responseValue != 'READY' or responseConfirm != 'OK':
             time.sleep(.5)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tSIM: ' + responseValue.split(',')[0],
+        print '\t\t\tSIM: ' + responseValue,
         return 1
 
     def attachNetwork(self):
-        command = '+AIPDCONT=\"INTERNET\"'
+        """
+        :type self: FTPComm.ATCommands
+        """
+        command = '+AIPDCONT="Embeddedworks.globalm2m.net"'
         print '\n' + '+AIPDCONT' + '\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseValue.split(',')[0] != '"Embeddedworks.globalm2m.net"'\
