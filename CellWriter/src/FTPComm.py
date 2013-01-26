@@ -22,7 +22,7 @@ class ATCommands:
         self.newLine = '\r\n'
 
     def initModem(self,
-                  port='/dev/tty.usbserial-A9014MJT',
+                  port='/dev/ttyUSB0',
                   baudrate=115200,
                   timeout=1):
         """
@@ -37,14 +37,20 @@ class ATCommands:
         :type timeout: int
         """
         self.ser = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
-        print "ATE0:\t\t",
-        while self.sendCommand('E0')[2] != 'OK':
+        print "ATE0\t\t",
+        responseConfirm = self.sendCommand('E0')[2]
+        while responseConfirm != 'OK':
             time.sleep(.5)
-        print '\n' + "AT:\t\t\t",
-        while self.sendCommand('')[2] != 'OK':
+            responseConfirm = self.sendCommand('E0')[2]
+        print responseConfirm
+        print "AT\t\t",
+        responseConfirm = self.sendCommand('')[2]
+        while responseConfirm != 'OK':
             time.sleep(.5)
+            responseConfirm = self.sendCommand('')[2]
+        print responseConfirm
         time.sleep(1)
-        return 1
+        return
 
     def sendCommand(self, command, getline=True):
         """
@@ -77,21 +83,20 @@ class ATCommands:
         responseConfirm = ''
         responseValue = ''
         responseType = ''
-        data = self.ser.read(512)
+        data = ''
+        data = self.ser.read(256)
         while data == '':
             time.sleep(1)
             data = self.ser.read(512)
-            #        print data
-        r = re.compile("(\s*((?P<type>\S+):)\s*(?P<value>\S+)"
-                       "(,.*)*)*\s*(?P<ok>\S+)\s*")
+        r = re.compile("(\s*((?P<type>\S+):)\s*(?P<value>\S+.+)"
+                       "*)*\s*[\n\r]+(?P<ok>OK)*")
         m = r.match(data)
         if m.group('type'):
             responseType = m.group('type')
         if m.group('value'):
-            responseValue = m.group('value')
+            responseValue = m.group('value').strip()
         if m.group('ok'):
-            responseConfirm = m.group('ok')
-            print responseConfirm,
+            responseConfirm = m.group('ok').strip()
         self.ser.flush()
         return responseType, responseValue, responseConfirm
 
@@ -110,13 +115,14 @@ class ATCommands:
         :rtype: int
         """
         command = '+CSQ'
-        print '\n' + command + ':\t\t',
+        print command + '\t\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while (int(responseValue.split(',')[0]) == 99 or responseConfirm !=
                'OK'):
             time.sleep(1)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tSignal: ' + responseValue.split(',')[0],
+        print responseConfirm + '\t\t\t',
+        print 'Signal: ' + responseValue.split(',')[0]
         return 1
 
     def checkSIM(self):
@@ -127,12 +133,13 @@ class ATCommands:
         :rtype: int
         """
         command = '+CPIN?'
-        print '\n' + command + '\t\t',
+        print command + '\t\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseValue != 'READY' or responseConfirm != 'OK':
             time.sleep(.5)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tSIM: ' + responseValue,
+        print responseConfirm + '\t\t\t',
+        print 'SIM: ' + responseValue
         return 1
 
     def attachNetwork(self):
@@ -140,13 +147,14 @@ class ATCommands:
         :type self: FTPComm.ATCommands
         """
         command = '+AIPDCONT="Embeddedworks.globalm2m.net"'
-        print '\n' + '+AIPDCONT' + '\t',
+        print '+AIPDCONT' + '\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseValue.split(',')[0] != '"Embeddedworks.globalm2m.net"'\
         or responseConfirm != 'OK':
             time.sleep(.5)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tAPN: ' + responseValue.split(',')[0],
+        print responseConfirm + '\t\t\t',
+        print 'APN: ' + responseValue.split(',')[0]
         return 1
 
     def activateGPRS(self):
@@ -157,12 +165,13 @@ class ATCommands:
         :rtype:
         """
         command = '+AIPA=1'
-        print '\n' + command + '\t\t',
+        print command + '\t\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseConfirm != 'OK':
             time.sleep(.5)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tGPRS: ' + responseValue.split(',')[1],
+        print responseConfirm + '\t\t\t',
+        print 'GPRS: ' + responseValue.split(',')[1]
         return 1
 
     def setAutoQuality(self):
@@ -170,12 +179,13 @@ class ATCommands:
         :type self: FTPComm.ATCommands
         """
         command = '+AIPQREQ=0,0,0,0,0'
-        print '\n' + command[:8],
+        print command[:8] + '\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseConfirm != 'OK':
             time.sleep(.5)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tAIPQ=' + responseValue,
+        print responseConfirm + '\t\t\t',
+        print 'AIPQREQ: ' + responseValue
         return 1
 
     #noinspection PyTypeChecker
@@ -191,18 +201,23 @@ class ATCommands:
         :type user: str
         :type pw: str
         """
-        command = '+AFTPO="{ip}",{p},"{u}","{pw}"'.format(ip=IP, p=port,
-                                                          u=user, pw=pw)
-        print '\n' + command
-        print '\n' + command[:6],
+        command = '+AFTPO="%(ip)s",%(p)d,"%(u)s","%(pw)s"' % {'ip': IP, 'p': port,
+                                                          'u': user, 'pw': pw}
+        #print '\n' + command
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        while responseValue != 'Login':
+        while responseValue != 'Login On':
+            print command[:6] + '\t\t',
+            print responseConfirm + '\t\t\t',
+            print 'AFTPO: ' + responseValue
             time.sleep(.5)
             self.activateGPRS()
             time.sleep(.5)
+            #            print command
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tAIPQ=' + responseValue,
-        return 1
+        print command[:6] + '\t\t',
+        print responseConfirm + '\t\t\t',
+        print 'AFTPO: ' + responseValue
+        pass
 
     def FTPclose(self):
         """
@@ -210,13 +225,49 @@ class ATCommands:
         :rtype:
         """
         command = '+AFTPC'
-        print '\n' + command + '\t\t',
+        print command + '\t\t',
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseValue != '0' or responseConfirm != 'OK':
             time.sleep(.5)
             responseValue, responseConfirm = self.sendCommand(command)[1:3]
-        print '\t\t\tFTPClosed: ' + responseValue,
-        return 1
+        print responseConfirm + '\t\t\t',
+        print 'FTPClosed: ' + responseValue
+        pass
+
+    def FTPsettype(self):
+        """
+        :type self: FTPComm.ATCommands
+
+        :return:
+        :rtype:
+        """
+        command = '+AFTPTYPE=1'
+        print command[:9] + '\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print responseConfirm + '\t\t\t',
+        print 'AFTPTYPE: ' + responseValue
+        pass
+
+    def FTPsetpasv(self):
+        """
+        :type self: FTPComm.ATCommands
+
+        :return:
+        :rtype:
+        """
+        command = '+AFTPPASV=1'
+        print command[:9] + '\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print responseConfirm + '\t\t\t',
+        print 'AFTPPASV: ' + responseValue
+
+        pass
 
 
 def main():
@@ -239,6 +290,10 @@ def main():
     time.sleep(1)
     modem.FTPconnect()
     time.sleep(1)
+    modem.FTPsettype()
+    time.sleep(1)
+    modem.FTPsetpasv()
+    time.sleep(1)
     modem.FTPclose()
     time.sleep(1)
     modem.closeConn()
@@ -247,4 +302,3 @@ def main():
 if __name__ == "__main__":
     #noinspection PyArgumentList
     main()
-    exit(0)
