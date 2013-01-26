@@ -77,3 +77,5 @@ nosetests.xml
 .project
 .pydevproject
 workspace.xml
+/CellWriter/src/sftp-config.json
+/MySQL_DBReader/sftp-config.json

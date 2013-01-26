@@ -4,5 +4,50 @@
 		{
 			"path": "/Users/morsecp/Documents/Developer/SnowCloud"
 		}
-	]
+	],
+    "settings":
+    {
+        // Whether or not to hide the clang output panel when it's empty
+        "sublimeclang_hide_output_when_empty": false,
+
+        // Whether or not to automatically show the output panel.
+        // If set to false, the default key-binding alt+d,alt+p
+        // will show it
+        "sublimeclang_show_output_panel": true,
+
+        // When set to true, the output panel will be updated with the active
+        // view's errors/warnings as it is switched to. If set to false you will
+        // have to switch to the view you want to get the errors/warnings for
+        // and press alt+d,alt+f to hide and then display the panel for it
+        // to refresh its contents
+        "sublimeclang_update_output_panel": true,
+
+        "sublimeclang_add_language_option": true,
+
+        "sublimeclang_additional_language_options":
+        {
+            // For example, you can use "c++": ["-std=c++11"] to enable C++11 features.
+            "c++" : [],
+            "c": ["-std=c99"],
+            "objc": [],
+            "objc++": []
+        },
+        
+        "sublimeclang_options":
+        [
+            "-Wno-comment",
+            //"`mysql_config --cflags --libs`",
+            "-isystem", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/",
+            "-isystem", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/usr/include/c++/4.2.1",
+            "-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk/System/Library/Frameworks/",
+            "-isystem", "C:\\MinGW\\lib\\gcc\\mingw32\\4.7.0\\include",
+            "-isystem", "C:\\MinGW\\lib\\gcc\\mingw32\\4.7.0\\include\\c++",
+            "-isystem", "C:\\MinGW\\lib\\gcc\\mingw32\\4.7.0\\include\\c++\\mingw32",
+            "-isystem", "C:\\MinGW\\include",
+            "-isystem", "/usr/include",
+            "-isystem", "/usr/include/c++/*",
+            "-isystem", "/usr/local/mysql/include",
+            "-Wall"
+        ]
+    }
 }
