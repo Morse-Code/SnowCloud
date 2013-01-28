@@ -1,11 +1,13 @@
 # FTPComm
 # 12/15/12
+import getopt
 
 __author__ = 'Christopher Morse'
 
 import time
 import serial
 import re
+import sys
 
 
 class ATCommands:
@@ -31,7 +33,7 @@ class ATCommands:
 
         Issues 'ATE0' to turn off echo. Loops until 'OK'.
 
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         :type port: str
         :type baudrate: int
         :type timeout: int
@@ -57,7 +59,7 @@ class ATCommands:
         Sends formatted AT Command over serial connection. Prefixes passed
         command string with 'AT+', and appends '\r' after.
 
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         :type command: str
         :type getline: bool
         """
@@ -110,7 +112,7 @@ class ATCommands:
         Issues AT+CSQ command to check signal quality. First value of
         tuple in AT command response has valid range 0-31.
 
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         :return: 1 if success, other if error
         :rtype: int
         """
@@ -128,7 +130,7 @@ class ATCommands:
     def checkSIM(self):
         """Check to make sure the SIM card is ready.
 
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         :return: 1 if success; otherwise != 1
         :rtype: int
         """
@@ -144,7 +146,7 @@ class ATCommands:
 
     def attachNetwork(self):
         """
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         """
         command = '+AIPDCONT="Embeddedworks.globalm2m.net"'
         print '+AIPDCONT' + '\t',
@@ -160,7 +162,7 @@ class ATCommands:
     def activateGPRS(self):
         """
         Activate GPRS data connection.
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         :return:
         :rtype:
         """
@@ -176,7 +178,7 @@ class ATCommands:
 
     def setAutoQuality(self):
         """
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         """
         command = '+AIPQREQ=0,0,0,0,0'
         print command[:8] + '\t',
@@ -188,22 +190,24 @@ class ATCommands:
         print 'AIPQREQ: ' + responseValue
         return 1
 
-    #noinspection PyTypeChecker
+    # noinspection PyTypeChecker
     def FTPconnect(self,
                    IP='174.63.100.132',
                    port=21,
                    user='morsecp',
                    pw='!1Morsecp'):
         """
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
         :type IP: str
         :type port: int
         :type user: str
         :type pw: str
         """
-        command = '+AFTPO="%(ip)s",%(p)d,"%(u)s","%(pw)s"' % {'ip': IP, 'p': port,
-                                                          'u': user, 'pw': pw}
-        #print '\n' + command
+        command = '+AFTPO="%(ip)s",%(p)d,"%(u)s","%(pw)s"' % {'ip': IP,
+                                                              'p': port,
+                                                              'u': user,
+                                                              'pw': pw}
+        # print '\n' + command
         responseValue, responseConfirm = self.sendCommand(command)[1:3]
         while responseValue != 'Login On':
             print command[:6] + '\t\t',
@@ -236,7 +240,7 @@ class ATCommands:
 
     def FTPsettype(self):
         """
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
 
         :return:
         :rtype:
@@ -253,7 +257,7 @@ class ATCommands:
 
     def FTPsetpasv(self):
         """
-        :type self: FTPComm.ATCommands
+        :type self: ftpcomm.ATCommands
 
         :return:
         :rtype:
@@ -269,11 +273,64 @@ class ATCommands:
 
         pass
 
+    def FTPsetFile(self, file):
+        """
+        :type self: ftpcomm.ATCommands
 
-def main():
+        :return:
+        :rtype:
+        """
+
+        command = '+AFTPSTOR="%(file)s"' % {'file': file}
+        print command[:9] + '\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print responseConfirm + '\t\t\t',
+        print 'AFTPSTOR: ' + responseValue
+
+        pass
+
+
+    def FTPsendData(self):
+        """
+        :type self: ftpcomm.ATCommands
+
+        :return:
+        :rtype:
+        """
+
+        command = '+AFTPDATA'
+        print command[:9] + '\t',
+        responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        while responseConfirm != 'OK':
+            time.sleep(.5)
+            responseValue, responseConfirm = self.sendCommand(command)[1:3]
+        print responseConfirm + '\t\t\t',
+        print 'AFTPDATA: ' + responseValue
+
+        pass
+
+
+def main(argv):
     """
     Main method.
     """
+    inputfile = ''
+    try:
+        opts, args = getopt.getopt(argv, "hi:", ["ifile="])
+    except getopt.GetoptError:
+        print 'ftpcomm.py -i <inputfile>'
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print 'ftpcomm.py -i <inputfile>'
+            sys.exit()
+        elif opt in ("-i", "--ifile"):
+            inputfile = arg
+    print 'Input file is "', inputfile
+
     print '\n\nCmnd\t|\tConfirm\t|\tValue'
     modem = ATCommands()
     modem.initModem()
@@ -294,11 +351,15 @@ def main():
     time.sleep(1)
     modem.FTPsetpasv()
     time.sleep(1)
+    modem.FTPsetFile(inputfile)
+    time.sleep(1)
+    modem.FTPsendData()
+    time.sleep(1)
     modem.FTPclose()
     time.sleep(1)
     modem.closeConn()
 
 
 if __name__ == "__main__":
-    #noinspection PyArgumentList
-    main()
+    # noinspection PyArgumentList
+    main(sys.argv[1:])

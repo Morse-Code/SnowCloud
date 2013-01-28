@@ -79,3 +79,5 @@ nosetests.xml
 workspace.xml
 /CellWriter/src/sftp-config.json
 /MySQL_DBReader/sftp-config.json
+
+/svn

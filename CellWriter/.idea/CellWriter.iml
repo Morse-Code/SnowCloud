@@ -4,6 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
+    <content url="file://$MODULE_DIR$/../svn/snowcloud/code/ARM/cm">
+      <sourceFolder url="file://$MODULE_DIR$/../svn/snowcloud/code/ARM/cm" isTestSource="false" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
