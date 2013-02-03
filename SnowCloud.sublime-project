@@ -47,7 +47,8 @@
             "-isystem", "/usr/include",
             "-isystem", "/usr/include/c++/*",
             "-isystem", "/usr/local/mysql/include",
-            "-Wall"
+            "-Wall",
+            "-Wno-uninitialized"
         ]
     }
 }

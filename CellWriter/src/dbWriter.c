@@ -22,7 +22,7 @@ void parsetokens(MYSQL *conn);
 / Parameters: MySQL *conn
 / Return: int 0 if successful; int 1 if error.
 **********************************************************************************************/
-int mysql_connection(MYSQL *conn) 
+int mysql_connection(MYSQL *conn)
 {
 
 
@@ -31,16 +31,19 @@ int mysql_connection(MYSQL *conn)
         return 1;
     }
 
-    // Verify connection to propper database. 
-    if (mysql_real_connect(conn, "localhost", "chris", "feb2879", "snowdb", 0, NULL, 0) == NULL) {
+    // Verify connection to propper database.
+    if (mysql_real_connect(conn, "localhost", "root", "", "SnowCloud-Test", 0,
+    NULL, 0) == NULL) {
         printf("Error %u: %s\n", mysql_errno(conn), mysql_error(conn));
         return 1;
     }
-    
+
     // Create tables. Really not necessary after the tables have been initialized. Comment out for now.
-    //mysql_query(conn, "CREATE TABLE SNOWDATA(mote int not null, cattribute int not null, dattribute int not null, epoch int not null, mytime int NOT NULL, myindex int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY)");
-    // mysql_query(conn, "CREATE TABLE TIMEKEEPER(time int NOT NULL, epoch int NOT NULL, myindex int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY)");
-    //mysql_query(conn, "CREATE TABLE LATESTQUERY(myindex int unsigned NOT NULL)");
+/*
+    mysql_query(conn, "CREATE TABLE SNOWDATA(mote int not null, cattribute int not null, dattribute int not null, epoch int not null, mytime int NOT NULL, myindex int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY)");
+    mysql_query(conn, "CREATE TABLE TIMEKEEPER(time int NOT NULL, epoch int NOT NULL, myindex int unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY)");
+    mysql_query(conn, "CREATE TABLE LATESTQUERY(myindex int unsigned NOT NULL)");
+*/
 
     return 0;
 }
@@ -74,7 +77,7 @@ void parsetokens(MYSQL *conn)
 / Parameters: MySQL *conn, char *mote, char *cattribute, char *dattribute, char *epoch
 / Return: int result; The number of characters written to the database.
 **************************************************************************************************/
-int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *epoch) 
+int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *epoch)
 {
     int success;
 
@@ -87,7 +90,7 @@ int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *e
         printf("%s",epoch);
 
     }
-/*  
+/*
     char *timedata = "INSERT INTO TIMEKEEPER(time, epoch, myindex) VALUES('%d', '%s', NULL)";
     char *timequery;
     int tstamp = (int)time(NULL);
@@ -112,9 +115,9 @@ int dbwrite(MYSQL *conn, char *mote, char *cattribute, char *dattribute, char *e
     return result;
 }
 
-int main(int argc, const char *argv[]) 
+int main(int argc, const char *argv[])
 {
-    
+
     MYSQL *conn;
     conn = mysql_init(NULL);
 
@@ -122,7 +125,7 @@ int main(int argc, const char *argv[])
         exit(1);
     }
 
-    //TODO Function to test existence of Tables. If found, return success, else create tables. 
+    //TODO Function to test existence of Tables. If found, return success, else create tables.
 
     parsetokens(conn);
     mysql_close(conn);

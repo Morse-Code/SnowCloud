@@ -81,3 +81,6 @@ workspace.xml
 /MySQL_DBReader/sftp-config.json
 
 /svn
+/CellWriter/src/log/
+/CellWriter/src/TESTDATA.txt
+/CellWriter/src/SentData/
