@@ -1,4 +1,3 @@
-//
 //  dbReader.c
 //  SnowCloud
 //
@@ -21,7 +20,7 @@ int dbread(MYSQL *conn);
 / Parameters: MySQL *conn
 / Return: int 0 if successful; int 1 if error.
 **************************************************************************************************/
-int mysql_connection(MYSQL *conn) 
+int mysql_connection(MYSQL *conn)
 {
 
 
@@ -38,20 +37,19 @@ int mysql_connection(MYSQL *conn)
     return 0;
 }
 
-/*  
 
-    int getLastEntry(MYSQL *conn)
-    {
-        int lastEntry;
+char* getLastEntry(MYSQL *conn)
+{
         MYSQL_RES *result;
         MYSQL_ROW row;
         char *query = "SELECT MAX(myindex) FROM LATESTQUERY";
-        mysql_query(conn, query);
+        if (mysql_query(conn, query) != 0){
+        printf("SQL Error: %d, %s%c", mysql_errno(conn), mysql_error(conn), '\n');
+        }
+        result = mysql_store_result(conn);
         row  = mysql_fetch_row(result);
-        lastEntry = row[0];
-        return lastEntry;
-    }
-*/
+        return row[0];
+}
 
 /**************************************************************************************************
 / Retrieve entries from database starting with the entry immediately following the most recent entry retrieved during the previeous session.
@@ -64,41 +62,42 @@ int dbread(MYSQL *conn)
     MYSQL_RES *result;
     MYSQL_ROW row;
     int i;
-    char *query;
+    char *query, *entry;
 
-    // int lastEntry = getLastEntry(conn);
-    mysql_query(conn,"SELECT mote, cattribute, dattribute, SNOWDATA.epoch, mytime, myindex "
-                     "FROM SNOWDATA "
-                     "WHERE SNOWDATA.myindex > (SELECT MAX(LATESTQUERY.myindex) "
-                                               "FROM LATESTQUERY) ORDER BY SNOWDATA.myindex"
-                );
-    result = mysql_store_result(conn);
+    char* lastEntry = getLastEntry(conn);
+    entry = "SELECT mote, cattribute, dattribute, SNOWDATA.epoch, mytime, myindex "
+            "FROM SNOWDATA "
+            "WHERE SNOWDATA.myindex > %s "
+            "ORDER BY SNOWDATA.myindex";
 
-    int num_fields = mysql_num_fields(result);
-
-    while ((row = mysql_fetch_row(result)))
-    {     
-        for(i = 0; i < (num_fields - 2); i++)
-        {
-            
-            printf("%s\t", row[i] ? row[i] : "NULL");
-        }
-        printf("\n");
-        char *entry = "INSERT INTO LATESTQUERY(myindex) VALUES('%s')";
-        asprintf(&query, entry, row[5]);
-        /*free(query);
-        free(entry);*/
-    }
-    if(mysql_query(conn, query) != 0){
+    asprintf(&query, entry, lastEntry);
+    if (mysql_query(conn, query) != 0){
         printf("SQL Error: %d, %s%c", mysql_errno(conn), mysql_error(conn), '\n');
     }
 
+    result = mysql_store_result(conn);
+    int num_fields = mysql_num_fields(result);
+    while ((row = mysql_fetch_row(result))){
+        for(i = 0; i < (num_fields - 3); i++){
+            printf("%s\t", row[i] ? row[i] : "NULL");
+        }
+        printf("%s\n", row[num_fields - 3] ? row[num_fields - 3] : "NULL");
+        entry = "INSERT INTO LATESTQUERY(myindex) VALUES('%s')";
+        asprintf(&query, entry, row[5]);
+    }
 
-  mysql_free_result(result);
-  return 0;
+    if(mysql_query(conn, query) != 0){
+        printf("SQL Error: %d, %s%c", mysql_errno(conn), mysql_error(conn), '\n');
+        mysql_query(conn, query);
+    }
+
+    mysql_free_result(result);
+//    free(entry);
+
+    return 0;
 }
 
-int main(int argc, const char *argv[]) 
+int main(int argc, const char *argv[])
 {
 
     MYSQL *conn;
@@ -107,7 +106,6 @@ int main(int argc, const char *argv[])
     if (mysql_connection(conn) == 1) {
         exit(1);
     }
-
 
     dbread(conn);
     mysql_close(conn);
